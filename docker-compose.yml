@@ -1,0 +1,30 @@
+version: '2'
+
+services:
+  rejson:
+    image: redislabs/rejson
+    restart: always
+    #ports:
+    #  - 7379:6379
+    environment:
+      TZ: Asia/Shanghai
+      LANG: en_US.UTF-8
+    command: redis-server /redis.conf
+    #command: ["redis-server","--loadmodule","/usr/lib/redis/modules/redisearch.so"]
+    volumes:
+      - ./redis.conf:/redis.conf
+      - ./data:/data
+    stdin_open: true
+    tty: true
+    privileged: true
+
+  scrumblr:
+    build: .
+    image: shawoo/scrumblr
+    depends_on:
+      - rejson
+    ports:
+      - 7389:8080
+    command: node server.js --server:baseurl='/scrum/' --server:port=8080 --redis:url='redis://rejson:6379'
+    stdin_open: true
+    tty: true
